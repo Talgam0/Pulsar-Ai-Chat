@@ -1,0 +1,758 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulsar Chat Project - Главная</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        /* Hamburger Menu Button */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: #333;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(30, 30, 40, 0.98);
+            backdrop-filter: blur(20px);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 2rem 0;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-details p {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            padding: 0 2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 2rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(102, 126, 234, 0.3);
+            border-left-color: #667eea;
+        }
+
+        .nav-icon {
+            margin-right: 1rem;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Desktop Navigation (hidden on mobile) */
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+        }
+
+        .features, .section, .section-white {
+            padding: 4rem 2rem;
+        }
+
+        .features {
+            background: white;
+        }
+
+        .section {
+            background: #f8f9fa;
+        }
+
+        .section-white {
+            background: white;
+        }
+
+        .features-container, .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features h2, .section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .features-grid, .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card, .card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-white .card {
+            background: white;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card:hover, .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon, .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3, .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .feature-card p, .card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            object-fit: cover;
+        }
+
+        .card ul {
+            text-align: left;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .card ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .card a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .card a:hover {
+            text-decoration: underline;
+        }
+
+        .cta-text {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 1.1rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .user-status {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Always show hamburger menu */
+        .nav-links {
+            display: none;
+        }
+
+        .menu-toggle {
+            display: block;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+
+            .user-status {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .features-grid, .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features h2, .section h2 {
+                font-size: 2rem;
+            }
+
+            .section, .features, .section-white {
+                padding: 2rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .hero {
+                padding: 2rem 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="closeSidebar()">×</button>
+        
+        <div class="sidebar-header">
+            {% if user.is_authenticated %}
+            <div class="user-info">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="user-details">
+                    <h3>{{ user.username }}</h3>
+                    <p>Пользователь</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="user-info">
+                <div class="user-avatar">Г</div>
+                <div class="user-details">
+                    <h3>Гость</h3>
+                    <p>Войдите в аккаунт</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-title">Навигация</div>
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'home' %}" class="active"><span class="nav-icon">🏠</span>Главная</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'chat:chat' %}"><span class="nav-icon">💬</span>Чат</a></li>
+                <li><a href="{% url 'chat:history' %}"><span class="nav-icon">📚</span>История</a></li>
+                {% endif %}
+                <li><a href="#autism"><span class="nav-icon">ℹ️</span>О РАС</a></li>
+                <li><a href="#specialists"><span class="nav-icon">👨‍⚕️</span>Специалисты</a></li>
+                <li><a href="#contact"><span class="nav-icon">📞</span>Контакты</a></li>
+            </ul>
+        </div>
+
+        {% if not user.is_authenticated %}
+        <div class="sidebar-section">
+            <div class="section-title">Аккаунт</div>
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'login' %}"><span class="nav-icon">🔑</span>Войти</a></li>
+                <li><a href="{% url 'register' %}"><span class="nav-icon">📝</span>Регистрация</a></li>
+            </ul>
+        </div>
+        {% else %}
+        <div class="sidebar-section">
+            <div class="section-title">Аккаунт</div>
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'logout' %}"><span class="nav-icon">🚪</span>Выйти</a></li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="user-status">
+        {% if user.is_authenticated %}
+            Привет, {{ user.username }}!
+        {% else %}
+            Гость
+        {% endif %}
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Pulsar Chat</div>
+            
+            <!-- Desktop Navigation -->
+            <div class="nav-links">
+                <a href="{% url 'home' %}">Главная</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'chat:chat' %}">Чат</a>
+                <a href="{% url 'chat:history' %}">История</a>
+                {% endif %}
+                <a href="#autism">О РАС</a>
+                <a href="#specialists">Специалисты</a>
+                <a href="#contact">Контакты</a>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}">Войти</a>
+                <a href="{% url 'register' %}">Регистрация</a>
+                {% else %}
+                <a href="{% url 'logout' %}">Выйти</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" onclick="openSidebar()">☰</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Добро пожаловать в Pulsar</h1>
+        <p>Место, где каждый голос важен. Здесь люди с РАС и их близкие находят понимание, поддержку и ценные знания. Станьте частью нашего дружного сообщества!</p>
+
+        <div class="cta-buttons">
+            {% if user.is_authenticated %}
+                <a href="{% url 'chat:chat' %}" class="btn btn-primary">Перейти в чат</a>
+                <a href="{% url 'chat:new_chat' %}" class="btn btn-secondary">Новый чат</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Войти</a>
+                <a href="{% url 'register' %}" class="btn btn-secondary">Зарегистрироваться</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-container">
+            <h2>О нас</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Наша миссия</h3>
+                    <p>Каждый человек уникален и заслуживает понимания. Мы создаём пространство, где люди с РАС и их семьи чувствуют себя принятыми, получают поддержку и вдохновение для развития.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Как мы поддерживаем</h3>
+                    <p>Наш умный помощник доступен круглосуточно, предлагая персональные рекомендации, связь с экспертами и возможность общения в комфортной обстановке.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌟</div>
+                    <h3>Наши цели</h3>
+                    <ul>
+                        <li>Создать тёплое и безопасное сообщество.</li>
+                        <li>Делиться знаниями об особенностях РАС.</li>
+                        <li>Поддерживать семьи практическими советами.</li>
+                        <li>Способствовать принятию нейроразнообразия в обществе.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="autism" class="section">
+        <div class="section-container">
+            <h2>О расстройствах аутистического спектра</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-icon">ℹ️</div>
+                    <h3>Что такое РАС</h3>
+                    <p>РАС — это особенность нейроразвития, которая проявляется в уникальном восприятии мира и способах взаимодействия с окружающими. Каждый человек с РАС неповторим.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3>Особенности восприятия</h3>
+                    <ul>
+                        <li>Глубокое погружение в интересующие темы.</li>
+                        <li>Потребность в предсказуемости и структуре.</li>
+                        <li>Особая чувствительность к звукам, свету, текстурам.</li>
+                        <li>Нестандартные, но эффективные способы мышления.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📚</div>
+                    <h3>Полезные ресурсы</h3>
+                    <ul>
+                        <li><a href="https://autism.org/" target="_blank">Autism Speaks</a> — международные исследования и ресурсы.</li>
+                        <li><a href="https://detdom.kz/foundations-communities" target="_blank">Autism Kazakhstan</a> — поддержка семей в Казахстане</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="cta-text">
+                {% if user.is_authenticated %}
+                    Хотите узнать больше? <a href="{% url 'chat:chat' %}">Обратитесь к нашему помощнику</a> за персональной информацией!
+                {% else %}
+                    Хотите узнать больше? <a href="{% url 'login' %}">Войдите</a>, чтобы получить доступ к нашему помощнику!
+                {% endif %}
+            </p>
+        </div>
+    </section>
+
+    <section id="specialists" class="section-white">
+    <div class="section-container">
+        <h2>Специалисты</h2>
+        <div class="grid">
+            <div class="card">
+                <a href="autism_chat_project/templates/chat/psychologist.html" class="specialist-link">
+                    <img src="autism_chat_project/templates/free-icon-psychology-11031148.png" alt="Психолог">
+                    <h3>Психолог</h3>
+                    <p>Помогает справляться с эмоциями и стрессом. Оказывает поддержку в трудные моменты.</p>
+                </a>
+            </div>
+            <div class="card">
+                <a href="autism_chat_project/templates/chat/speech-therapist.html" class="specialist-link">
+                    <img src="autism_chat_project/templates/free-icon-speech-therapist-978960.png" alt="Логопед">
+                    <h3>Логопед</h3>
+                    <p>Работает над развитием речи и коммуникации для более уверенного общения.</p>
+                </a>
+            </div>
+            <div class="card">
+                <a href="autism_chat_project/templates/chat/teacher.html" class="specialist-link">
+                    <img src="autism_chat_project/templates/free-icon-teacher-5526513.png" alt="Педагог">
+                    <h3>Педагог</h3>
+                    <p>Поддерживает обучение и развитие социальных навыков.</p>
+                </a>
+            </div>
+            <div class="card">
+                <a href="autism_chat_project/templates/chat/consultant.html" class="specialist-link">
+                    <img src="autism_chat_project/templates/free-icon-consultant-6856835.png" alt="Консультант">
+                    <h3>Консультант</h3>
+                    <p>Предоставляет профессиональные консультации и рекомендации.</p>
+                </a>
+            </div>
+            </div>
+            <p class="cta-text">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'chat:chat' %}">Напишите в чат-бот</a>, чтобы узнать, как связаться со специалистом!
+                {% else %}
+                    <a href="{% url 'login' %}">Войдите</a>, чтобы получить доступ к чат-боту и связаться со специалистом!
+                {% endif %}
+            </p>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="section-container">
+            <h2>Контакты</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-icon">📧</div>
+                    <h3>Электронная почта</h3>
+                    <p>Напишите нам: <a href="mailto:support@autismchat.org">support@autismchat.org</a></p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📞</div>
+                    <h3>Телефон</h3>
+                    <p>Позвоните: <a href="tel:+77472100960">+7 747 210 09 60</a></p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📍</div>
+                    <h3>Адрес</h3>
+                    <p>Посетите нас: Розыбакиева 1488</p>
+                </div>
+            </div>
+            <p class="cta-text">Мы всегда рады помочь. Напишите или позвоните в удобное время!</p>
+        </div>
+    </section>
+
+    <script>
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('active');
+            document.querySelector('.sidebar-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close sidebar when clicking on a link (for smooth navigation)
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                closeSidebar();
+            });
+        });
+
+        // Close sidebar on window resize if it's too large
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
